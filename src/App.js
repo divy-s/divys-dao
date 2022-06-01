@@ -3,12 +3,20 @@ import twitterLogo from './assets/twitter-logo.svg';
 import './App.css';
 
 // Constants
-const TWITTER_HANDLE = '_buildspace';
+const TWITTER_HANDLE = 'div_ys';
 const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
+const GIFS = [
+  'https://media1.giphy.com/media/vP5gXvSXJ2olG/giphy.gif',
+  'https://c.tenor.com/lxNopFLbaD0AAAAC/lain-serial-experiments-lain.gif',
+  'https://i.pinimg.com/originals/d7/64/84/d76484f755763b87d45ec9c56e21b37c.gif'
+];
+
 
 const App = () => {
 
   const [walletAddress, setWalletAddress] = useState(null);
+  const [inputValue, setInputValue] = useState('');
+  const [gifList, setGifList] = useState([]);
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -40,6 +48,21 @@ const App = () => {
     }
   };
 
+  const sendGif = async () => {
+    if (inputValue.length > 0) {
+      console.log('Gif link:', inputValue);
+      setGifList([...gifList, inputValue]);
+      setInputValue('');
+    } else {
+      console.log('No input, try again.');
+    }
+  }
+
+  const onInputChange = (event) => {
+    const { value } = event.target;
+    setInputValue(value);
+  }
+
   const renderNotConnectedContainer = () => (
     <button
       className="cta-button connect-wallet-button"
@@ -49,6 +72,34 @@ const App = () => {
     </button>
   );
 
+  const renderConnectedContainer = () => (
+    <div className="connected-container">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          sendGif();
+        }}
+      >
+        <input 
+          type="text" 
+          placeholder="Enter gif link!" 
+          value={inputValue}
+          onChange={onInputChange}
+        />
+        <button type="submit" className="cta-button submit-gif-button">
+          Submit
+        </button>
+      </form>
+      <div className="gif-grid">
+        {gifList.map((gif) => (
+          <div className="gif-item" key={gif}>
+            <img src={gif} alt={gif} />
+            </div>
+        ))}
+      </div>
+    </div>
+  )
+
   useEffect(() => {
     const onLoad = async () => {
       await checkIfWalletIsConnected();
@@ -56,6 +107,14 @@ const App = () => {
     window.addEventListener('load', onLoad);
     return () => window.removeEventListener('load', onLoad);
   }, []);
+
+  useEffect(() => {
+    if(walletAddress) {
+      console.log('Fetching gif list...');
+
+      setGifList(GIFS);
+    }
+  }, [walletAddress])
 
   return (
     <div className="App">
@@ -71,6 +130,7 @@ const App = () => {
             </p>
             {/* Render your connect to wallet button right here */}
             {!walletAddress && renderNotConnectedContainer()}
+            {walletAddress && renderConnectedContainer()}
           </div>
           <div className="footer-container">
             <img alt="Twitter Logo" className="twitter-logo" src={twitterLogo} />
@@ -79,7 +139,7 @@ const App = () => {
               href={TWITTER_LINK}
               target="_blank"
               rel="noreferrer"
-            >{`built on @${TWITTER_HANDLE}`}</a>
+            >{`built by @${TWITTER_HANDLE}`}</a>
           </div>
         </div>
       </div>
